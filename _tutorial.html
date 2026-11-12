@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>井底牌局 · 新手教程</title>
+<style>
+  /* ============================================================
+     新手教程入口页。
+     ⚠️ 和 _lab.html 一样：这里**没有游戏逻辑**，也不复制 index.html 的任何代码。
+        教程本体是 `index.html?tuto=1` —— 真引擎 + 一层引导气泡。
+        原因：教程要"真的打两回合"，如果另写一套战斗，数值和判定迟早分叉，
+        玩家学到的就不是正式版的行为。这里只负责讲清楚"你会学到什么"。
+     ============================================================ */
+  * { box-sizing: border-box; }
+  html, body { margin: 0; min-height: 100%; }
+  body { background: #F2F0E9; color: #5C544C; display: flex; align-items: center;
+    justify-content: center; padding: 40px 20px;
+    font: 14px/1.7 "PingFang SC", "Microsoft YaHei", system-ui, sans-serif; }
+  .box { width: 100%; max-width: 470px; background: #FBF9F4; border: 1px solid #E2DCCC;
+    border-radius: 14px; padding: 26px 24px 22px; box-shadow: 0 6px 24px rgba(90, 78, 60, .07); }
+  h1 { margin: 0 0 4px; font-size: 17px; letter-spacing: .06em; color: #4E473F; }
+  h1 .tag { font-size: 9.5px; font-weight: 700; letter-spacing: .14em; color: #8F6310;
+    background: #F3E4BE; border-radius: 4px; padding: 1.5px 5px 2px; vertical-align: 2px;
+    margin-left: 6px; }
+  .sub { margin: 0 0 18px; font-size: 12px; color: #A09C92; }
+
+  .steps { list-style: none; margin: 0 0 20px; padding: 0; }
+  .steps li { display: flex; gap: 10px; padding: 9px 0; border-top: 1px dashed #E6E0D2; }
+  .steps li:first-child { border-top: 0; }
+  .steps i { flex: none; width: 20px; height: 20px; border-radius: 50%; margin-top: 1px;
+    background: #EFE7D2; color: #8F6310; font-style: normal; font-size: 11px; font-weight: 700;
+    display: flex; align-items: center; justify-content: center; }
+  .steps b { display: block; font-size: 12.5px; color: #4E473F; letter-spacing: .03em; }
+  .steps span { display: block; font-size: 11.5px; line-height: 1.7; color: #8E8578; }
+
+  a.btn { display: block; text-align: center; padding: 11px 14px; border-radius: 9px;
+    background: #A97517; color: #FFF9EC; text-decoration: none; font-size: 14px;
+    font-weight: 700; letter-spacing: .06em; }
+  a.btn:hover { background: #96690F; }
+  a.gray { display: block; text-align: center; margin-top: 10px; padding: 9px 14px;
+    border-radius: 9px; border: 1px solid #E2DCCC; background: #FBF8F0; color: #8E8578;
+    text-decoration: none; font-size: 12.5px; }
+  a.gray:hover { background: #FFFDF6; border-color: #CFC7B4; }
+  .note { margin: 16px 0 0; font-size: 11.5px; line-height: 1.85; color: #8E8578; }
+  .note b { color: #6B645B; }
+</style>
+</head>
+<body>
+<div class="box">
+  <h1>新手教程<span class="tag">TUTORIAL</span></h1>
+  <p class="sub">只打前 2 回合 · 大约 3 分钟 · 一路有提示</p>
+
+  <ul class="steps">
+    <li><i>1</i><div><b>回合事件</b>
+      <span>每回合开始二选一。开局两个都是「礼盒」，直接发你 3 张卡。</span></div></li>
+    <li><i>2</i><div><b>卡面与出战槽</b>
+      <span>看卡面左上「伤害 × 连击」和右上星级；点卡再点槽位把它放进出战顺序。</span></div></li>
+    <li><i>3</i><div><b>战斗演出</b>
+      <span>前摇 → 爆发 → 命中停顿。本场最后一击是「穿刺」特写。</span></div></li>
+    <li><i>4</i><div><b>商店与合成</b>
+      <span>分数换金币，金币买卡；两张同名同星的卡合成升星，伤害直接翻倍。</span></div></li>
+  </ul>
+
+  <a class="btn" href="index.html?tuto=1">开始教学</a>
+  <a class="gray" href="index.html">跳过教程，直接开打</a>
+  <!-- 回大厅（v0.8.24 接进 server.js 后加的）：走 http 时才存在大厅；
+       file:// 双击调试时 location.href='/' 会跳到磁盘根目录，所以用 JS 判协议，
+       本地就退成上一页（通常是游戏本体）。 -->
+  <a class="gray" href="/" id="back-lobby" style="display:none">返回游戏大厅</a>
+
+  <p class="note">
+    教程里随时可以点左下角「退出教程」回到正式游戏；<br>
+    <b>它用的就是正式版同一套战斗与结算</b>，没有任何简化版数值。
+  </p>
+</div>
+<script>
+  /* 只在 http(s) 下显示「返回游戏大厅」—— 用 file:// 双击打开时没有大厅可回 */
+  if (/^https?:$/.test(location.protocol)) {
+    var bl = document.getElementById('back-lobby');
+    bl.style.display = 'block';
+    bl.addEventListener('click', function (ev) {
+      ev.preventDefault();
+      location.href = '/';
+    });
+  }
+</script>
+</body>
+</html>
