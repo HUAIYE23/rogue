@@ -9194,7 +9194,11 @@ body.land-forced #scr-battle { min-height: 0; }
         return;
       }
     } catch (e) {}
-    if (/^https?:$/.test(location.protocol)) { location.href = '/'; return; }
+    /* ⚠️ 纯静态托管（GitHub Pages / Netlify / Vercel）也是 https，但**根路径没有大厅**：
+       跳 '/' 会落到仓库根之外 → 404（用户 2026-11-12 报的就是这个）。
+       判据用后面探出来的 LB_API：只有真后端（!== false）才跳大厅，否则退化成刷新重开一局。
+       LB_API 是 var 声明，函数提升后这里能读到；点击必然发生在启动探测之后。 */
+    if (LB_API !== false && /^https?:$/.test(location.protocol)) { location.href = '/'; return; }
     location.reload();
   }
 
@@ -9427,7 +9431,8 @@ body.land-forced #scr-battle { min-height: 0; }
   }
 
   function askQuit() {
-    var toLobby = /^https?:$/.test(location.protocol);
+    /* ⚠️ 不能只看协议：纯静态托管也是 https，但没有大厅（见 leaveGame 的注释）。 */
+    var toLobby = LB_API !== false && /^https?:$/.test(location.protocol);
     /* 三个按钮竖排（v0.8.43 加的「重开本回合」）：
        本地双击和内网联机都挂 —— 它跟协议无关，纯粹是一次状态回滚。
        ⚠️ 教程模式不挂：教程的步骤机是按固定流程推进的，中途回滚会把引导打乱。 */
@@ -9435,7 +9440,7 @@ body.land-forced #scr-battle { min-height: 0; }
       '<h2>退出本局</h2>' +
       '<p class="sub">' + (toLobby
         ? '这一局的进度不会保留，退出后要重新开一局。'
-        : '现在是本地双击打开，没有大厅可回 —— 退出等于重开一局。') + '</p>' +
+        : '现在是单机打开（本地文件或纯静态托管），没有大厅可回 —— 退出等于重开一局。') + '</p>' +
       '<p class="sub" style="margin-top:8px;color:#8A6A2A">' +
         '重开本回合：回到本回合的<b>事件选择</b>，卡组、金币这些退回本回合开始时的样子；' +
         '事件和商店货架会<b>重新抽</b>。' +
@@ -9878,7 +9883,7 @@ body.land-forced #scr-battle { min-height: 0; }
      六、测试钩子
      ============================================================ */
   window.__cards = {
-    version: '0.8.69',
+    version: '0.8.70',
     MAX_SLOT: MAX_SLOT,
     MAX_LV: MAX_LV,
     maxLvOf: maxLvOf,       /* 单卡上限（默认 3，maxLv:4 的才有四星）*/

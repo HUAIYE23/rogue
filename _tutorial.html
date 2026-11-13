@@ -64,9 +64,10 @@
 
   <a class="btn" href="index.html?tuto=1">开始教学</a>
   <a class="gray" href="index.html">跳过教程，直接开打</a>
-  <!-- 回大厅（v0.8.24 接进 server.js 后加的）：走 http 时才存在大厅；
-       file:// 双击调试时 location.href='/' 会跳到磁盘根目录，所以用 JS 判协议，
-       本地就退成上一页（通常是游戏本体）。 -->
+  <!-- 回大厅（v0.8.24 接进 server.js 后加的）：**只有真有大厅时才出现**。
+       服务器版：href="/"（server.js 把根路径发成大厅页）→ 显示「返回游戏大厅」。
+       纯静态托管 / file://：根路径没有大厅（用户 2026-11-12 报的 404），
+       脚本会把它改成「返回游戏」→ index.html。 -->
   <a class="gray" href="/" id="back-lobby" style="display:none">返回游戏大厅</a>
 
   <p class="note">
@@ -75,15 +76,28 @@
   </p>
 </div>
 <script>
-  /* 只在 http(s) 下显示「返回游戏大厅」—— 用 file:// 双击打开时没有大厅可回 */
-  if (/^https?:$/.test(location.protocol)) {
+  /* 「返回大厅」只在**真有大厅**的服务器版里给。
+     判据：探一次 /api/rogue/lb —— 200 = server.js 在（根路径是大厅页），
+     404 = 纯静态托管（GitHub Pages / Netlify），根路径不是大厅，跳过去必然 404。
+     file:// 双击：没有大厅，也不显示。 */
+  (function () {
     var bl = document.getElementById('back-lobby');
-    bl.style.display = 'block';
-    bl.addEventListener('click', function (ev) {
-      ev.preventDefault();
-      location.href = '/';
-    });
-  }
+    if (!bl) return;
+    function asGameLink() {
+      bl.textContent = '返回游戏';
+      bl.href = 'index.html';
+      bl.style.display = 'block';
+    }
+    if (!/^https?:$/.test(location.protocol)) return;
+    if (!window.fetch) { asGameLink(); return; }
+    fetch('/api/rogue/lb', { cache: 'no-store' }).then(function (r) {
+      if (r && r.ok) {
+        bl.style.display = 'block';          /* 服务器版：保持 href='/' 回大厅 */
+        return;
+      }
+      asGameLink();
+    }).catch(asGameLink);
+  })();
 </script>
 </body>
 </html>
